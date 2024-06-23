@@ -53,3 +53,6 @@ $response = $kernel->handle(
 )->send();
 
 $kernel->terminate($request, $response);
+
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', '0');

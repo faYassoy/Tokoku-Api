@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\ProductCategory;
+use App\Models\Customer;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class ProductCategoryController extends Controller
+class CustomerController extends Controller
 {
     public function index(Request $request)
     {
@@ -23,8 +23,8 @@ class ProductCategoryController extends Controller
         $columnAliases = [];
 
         // Begin query
-        $model = new ProductCategory();
-        $query = ProductCategory::query();
+        $model = new Customer();
+        $query = Customer::query();
 
         // Search functionality
         if ($request->get("search") != "") {
@@ -64,17 +64,18 @@ class ProductCategoryController extends Controller
         // Validate request
         $validation = $this->validation($request->all(), [
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'contact_info' => 'required|string|max:255',
+            'credit_balance' => 'integer|min:0',
         ]);
 
         if ($validation) return $validation;
 
         return DB::transaction(function () use ($request) {
-            $category = new ProductCategory();
-            $category = $this->dump_field($request->all(), $category);
+            $customer = new Customer();
+            $customer = $this->dump_field($request->all(), $customer);
 
             try {
-                $category->save();
+                $customer->save();
             } catch (\Throwable $th) {
                 DB::rollBack();
                 return response([
@@ -86,27 +87,9 @@ class ProductCategoryController extends Controller
 
             return response([
                 "message" => "success",
-                "data" => $category
+                "data" => $customer
             ], 201);
-        });
-    }
-
-    public function show($id)
-    {
-        try {
-            $category = ProductCategory::findOrFail($id);
-            return response()->json($category, 200);
-        } catch (QueryException $e) {
-            return response()->json([
-                'error' => 'Failed to retrieve category',
-                'details' => $e->getMessage()
-            ], 500);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => 'Category not found',
-                'details' => $e->getMessage()
-            ], 404);
-        }
+        }, );
     }
 
     public function update(Request $request, $id)
@@ -114,17 +97,18 @@ class ProductCategoryController extends Controller
         // Validate request
         $validation = $this->validation($request->all(), [
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'contact_info' => 'required|string|max:255',
+            'credit_balance' => 'integer|min:0',
         ]);
 
         if ($validation) return $validation;
 
         return DB::transaction(function () use ($request, $id) {
-            $category = ProductCategory::findOrFail($id);
-            $category = $this->dump_field($request->all(), $category);
+            $customer = Customer::findOrFail($id);
+            $customer = $this->dump_field($request->all(), $customer);
 
             try {
-                $category->save();
+                $customer->save();
             } catch (\Throwable $th) {
                 DB::rollBack();
                 return response([
@@ -136,25 +120,25 @@ class ProductCategoryController extends Controller
 
             return response([
                 "message" => "success",
-                "data" => $category
+                "data" => $customer
             ], 200);
-        });
+        }, );
     }
 
     public function destroy($id)
     {
         try {
-            $category = ProductCategory::findOrFail($id);
-            $category->delete();
-            return response()->json(['message' => 'Category deleted successfully'], 200);
+            $customer = Customer::findOrFail($id);
+            $customer->delete();
+            return response()->json(['message' => 'Customer deleted successfully'], 200);
         } catch (QueryException $e) {
             return response()->json([
-                'error' => 'Failed to delete category',
+                'error' => 'Failed to delete customer',
                 'details' => $e->getMessage()
             ], 500);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'error' => 'Category not found',
+                'error' => 'Customer not found',
                 'details' => $e->getMessage()
             ], 404);
         }

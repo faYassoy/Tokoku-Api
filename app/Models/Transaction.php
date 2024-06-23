@@ -2,29 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use PHPUnit\Framework\Constraint\Operator;
 
 class Transaction extends Model
 {
-    use HasFactory;
-    protected $fillable = [
-        'operator_id', 'customer_id', 'transaction_date', 'total_amount', 'payment_type', 'status'
-    ];
+    protected $table = 'transactions';
+    protected $primaryKey = 'transaction_id';
+    protected $fillable = ['user_id', 'customer_id', 'transaction_date', 'total_amount', 'payment_type', 'status'];
 
-    public function operator()
+    public function user()
     {
-        return $this->belongsTo(Operator::class, 'operator_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function customer()
     {
-        return $this->belongsTo(customer::class, 'customer_id')->withDefault();
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     public function transactionDetails()
     {
-        return $this->hasMany(TransactionDetail::class);
+        return $this->hasMany(TransactionDetail::class, 'transaction_id');
+    }
+
+    public function creditTransaction()
+    {
+        return $this->hasOne(CreditTransaction::class, 'transaction_id');
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class, 'related_transaction_id');
+    }
+
+    public function ProductReturn()
+    {
+        return $this->hasOne(ProductReturn::class, 'transaction_id');
     }
 }

@@ -3,38 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Operator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    /**
-     * Handle an authentication attempt.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
     public function login(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        if (Auth::guard('web')->attempt($request->only('username', 'password'))) {
-            $operator = Auth::guard('web')->user();
-
-            // Ensure your Operator model uses HasApiTokens trait
-            $token = $operator->createToken('Operator Access Token')->plainTextToken;
-
+        if ($validator->fails()) {
             return response()->json([
-                'message' => 'Login successful',
-                'operator' => $operator,
-                'token' => $token,
-            ], 200);
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
-        return response()->json(['message' => 'The provided credentials do not match our records.'], 401);
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
+            $user = Auth::user();
+            $token = $user->createToken('authToken')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'user' => [
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                ],
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
     }
-};
+}

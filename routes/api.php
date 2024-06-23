@@ -3,7 +3,18 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PicklistController;
 use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductPriceController;
+use App\Http\Controllers\ProductStockController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\ReturnDetailController;
+use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,11 +32,24 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/login', [AuthController::class, 'login']);
-
+ 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::middleware('checkRole:administrator')->group(function() {
-        Route::apiResource('product-categories', ProductCategoryController::class);
-        //other administrator route
+    Route::middleware('checkRole:admin')->group(function() {
+        Route::apiResource('/product-categories', ProductCategoryController::class);
+        Route::apiResource('/users', UserController::class);
+        Route::apiResource('/customers', CustomerController::class);
+        Route::apiResource('/products', ProductController::class);
+        Route::apiResource('/product-prices', ProductPriceController::class);
+        Route::apiResource('/transactions', TransactionController::class);
+        Route::apiResource('/returns', ReturnController::class);
+        Route::apiResource('/return-details', ReturnDetailController::class);
+        Route::apiResource('/reports', ReportController::class);
+        Route::apiResource('/product-stocks', ProductStockController::class);
+        Route::apiResource('/stock-movements', StockMovementController::class);
+
+        Route::prefix('/options')->group(function () {
+            Route::get('/category', [PicklistController::class, 'category']);
+        });
     });
 // general route
 });

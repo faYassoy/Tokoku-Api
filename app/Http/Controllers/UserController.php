@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\ProductCategory;
+use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
 
-class ProductCategoryController extends Controller
+class UserController extends Controller
 {
     public function index(Request $request)
     {
@@ -23,8 +24,8 @@ class ProductCategoryController extends Controller
         $columnAliases = [];
 
         // Begin query
-        $model = new ProductCategory();
-        $query = ProductCategory::query();
+        $model = new User();
+        $query = User::query();
 
         // Search functionality
         if ($request->get("search") != "") {
@@ -63,18 +64,21 @@ class ProductCategoryController extends Controller
     {
         // Validate request
         $validation = $this->validation($request->all(), [
+            'username' => 'required|string|unique:users,username|max:255',
+            'password' => 'required|string|min:8',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'role' => 'required|string|max:255',
         ]);
 
         if ($validation) return $validation;
 
         return DB::transaction(function () use ($request) {
-            $category = new ProductCategory();
-            $category = $this->dump_field($request->all(), $category);
+            $user = new User();
+            $user = $this->dump_field($request->all(), $user);
+            $user->password = bcrypt($request->password);
 
             try {
-                $category->save();
+                $user->save();
             } catch (\Throwable $th) {
                 DB::rollBack();
                 return response([
@@ -86,7 +90,7 @@ class ProductCategoryController extends Controller
 
             return response([
                 "message" => "success",
-                "data" => $category
+                "data" => $user
             ], 201);
         });
     }
@@ -94,16 +98,16 @@ class ProductCategoryController extends Controller
     public function show($id)
     {
         try {
-            $category = ProductCategory::findOrFail($id);
-            return response()->json($category, 200);
+            $user = User::findOrFail($id);
+            return response()->json($user, 200);
         } catch (QueryException $e) {
             return response()->json([
-                'error' => 'Failed to retrieve category',
+                'error' => 'Failed to retrieve user',
                 'details' => $e->getMessage()
             ], 500);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'error' => 'Category not found',
+                'error' => 'User not found',
                 'details' => $e->getMessage()
             ], 404);
         }
@@ -113,18 +117,24 @@ class ProductCategoryController extends Controller
     {
         // Validate request
         $validation = $this->validation($request->all(), [
+            'username' => 'required|string|max:255|unique:users,username,' . $id . ',id',
+            'password' => 'sometimes|string|min:8',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'role' => 'required|string|max:255',
         ]);
 
         if ($validation) return $validation;
 
         return DB::transaction(function () use ($request, $id) {
-            $category = ProductCategory::findOrFail($id);
-            $category = $this->dump_field($request->all(), $category);
+            $user = User::findOrFail($id);
+            $user = $this->dump_field($request->all(), $user);
+
+            if ($request->has('password')) {
+                $user->password = bcrypt($request->password);
+            }
 
             try {
-                $category->save();
+                $user->save();
             } catch (\Throwable $th) {
                 DB::rollBack();
                 return response([
@@ -136,25 +146,25 @@ class ProductCategoryController extends Controller
 
             return response([
                 "message" => "success",
-                "data" => $category
+                "data" => $user
             ], 200);
-        });
+        }, 5);
     }
 
     public function destroy($id)
     {
         try {
-            $category = ProductCategory::findOrFail($id);
-            $category->delete();
-            return response()->json(['message' => 'Category deleted successfully'], 200);
+            $user = User::findOrFail($id);
+            $user->delete();
+            return response()->json(['message' => 'User deleted successfully'], 200);
         } catch (QueryException $e) {
             return response()->json([
-                'error' => 'Failed to delete category',
+                'error' => 'Failed to delete user',
                 'details' => $e->getMessage()
             ], 500);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'error' => 'Category not found',
+                'error' => 'User not found',
                 'details' => $e->getMessage()
             ], 404);
         }

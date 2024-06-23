@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_categories', function (Blueprint $table) {
-            $table->id(); // Creates an auto-incrementing ID column
+        Schema::create('users', function (Blueprint $table) {
+            $table->id('id');
+            $table->string('username')->unique();
+            $table->string('password');
             $table->string('name');
-            $table->text('description')->nullable(); // Make description optional
-            $table->timestamps(); // Creates created_at and updated_at columns
+            $table->string('role');
+            $table->timestamps();
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_categories');
+        Schema::dropIfExists('users');
     }
 };
