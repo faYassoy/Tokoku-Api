@@ -34,7 +34,7 @@ class ProductPriceController extends Controller
         }
 
         $query = $query->orderBy($this->remark_column($sortby, $columnAliases), $sortDirection)
-            ->select($model->selectable)->paginate($paginate);
+            ->select('*')->paginate($paginate);
 
         if (empty($query->items())) {
             return response([
@@ -53,65 +53,66 @@ class ProductPriceController extends Controller
     public function store(Request $request)
     {
         $validation = $this->validation($request->all(), [
-            'product_id' => 'required|exists:products,product_id',
+            'product_id' => 'required|exists:products,id',
             'price_type' => 'required|string|max:255',
-            'price' => 'required|integer'
+            'price' => 'required|integer|min:0',
         ]);
 
         if ($validation) return $validation;
 
         DB::beginTransaction();
-        $model = new ProductPrice();
-        $model = $this->dump_field($request->all(), $model);
-
         try {
-            $model->save();
+            $productPrice = new ProductPrice();
+            $productPrice = $this->dump_field($request->all(), $productPrice);
+
+            $productPrice->save();
+
+            DB::commit();
+
+            return response([
+                "message" => "success",
+                "data" => $productPrice
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response([
                 "message" => "Error: server side having problem!",
+                "th" => $th,
             ], 500);
         }
-
-        DB::commit();
-
-        return response([
-            "message" => "success",
-            "data" => $model
-        ], 201);
     }
 
     public function update(Request $request, $id)
     {
         $validation = $this->validation($request->all(), [
-            'product_id' => 'required|exists:products,product_id',
-            'price_type' => 'required|string|max:255',
-            'price' => 'required|integer'
+            'price_type' => 'nullable|string|max:255',
+            'price' => 'nullable|integer|min:0',
         ]);
 
         if ($validation) return $validation;
 
-        $model = ProductPrice::findOrFail($id);
-        $model = $this->dump_field($request->all(), $model);
-
         DB::beginTransaction();
         try {
-            $model->save();
+            $productPrice = ProductPrice::findOrFail($id);
+            $productPrice->previous_price = $productPrice->price;
+            $productPrice = $this->dump_field($request->all(), $productPrice);
+
+            $productPrice->save();
+
+            DB::commit();
+
+            return response([
+                "message" => "success",
+                "data" => $productPrice
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response([
                 "message" => "Error: server side having problem!",
+                "th" => $th,
             ], 500);
         }
-
-        DB::commit();
-
-        return response([
-            "message" => "success",
-            "data" => $model
-        ], 200);
     }
-
     public function destroy($id)
     {
         $model = ProductPrice::findOrFail($id);

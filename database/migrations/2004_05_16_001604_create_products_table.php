@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('barcode')->nullable();
             $table->string('image')->nullable();
-            $table->integer('popularity_rating')->nullable();
+            $table->integer('buy_price');
             $table->integer('sales_counter')->nullable();
             $table->timestamps();
 

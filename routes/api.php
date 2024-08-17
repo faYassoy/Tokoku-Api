@@ -13,6 +13,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReturnDetailController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\SummaryTransactionsController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 
@@ -34,6 +35,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/login', [AuthController::class, 'login']);
  
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/account', [AuthController::class, 'account']);
     Route::middleware('checkRole:admin')->group(function() {
         Route::apiResource('/product-categories', ProductCategoryController::class);
         Route::apiResource('/users', UserController::class);
@@ -46,6 +48,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/reports', ReportController::class);
         Route::apiResource('/product-stocks', ProductStockController::class);
         Route::apiResource('/stock-movements', StockMovementController::class);
+        Route::apiResource('/summary-transaction', SummaryTransactionsController::class);
+        Route::post('/close-summary', [SummaryTransactionsController::class, 'close']);
+        
+        Route::prefix('/options')->group(function () {
+            Route::get('/category', [PicklistController::class, 'category']);
+        });
+    });
+    Route::middleware('checkRole:cashier,admin')->group(function() {
+        
+        Route::apiResource('/products', ProductController::class);
+        Route::apiResource('/transactions', TransactionController::class);
+        Route::apiResource('/returns', ReturnController::class);
+        Route::apiResource('/return-details', ReturnDetailController::class);
+        Route::apiResource('/reports', ReportController::class);
+        
+        Route::get('/check-open', [SummaryTransactionsController::class, 'check_open']);
+        
+        Route::get('/transactions/{id}/print-struck', [TransactionController::class, 'print_struck']);
 
         Route::prefix('/options')->group(function () {
             Route::get('/category', [PicklistController::class, 'category']);

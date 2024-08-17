@@ -23,7 +23,7 @@ class ProductStockController extends Controller
         $columnAliases = [];
 
         $model = new ProductStock();
-        $query = ProductStock::query();
+        $query = ProductStock::query()->with('product');
 
         if ($request->get("search") != "") {
             $query = $this->search($request->get("search"), $model, $query);
@@ -54,34 +54,49 @@ class ProductStockController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validation = $this->validation($request->all(), [
-            'product_id' => 'required|exists:products,product_id',
-            'stock_quantity' => 'required|integer|min:0',
-        ]);
+{
+    $validation = $this->validation($request->all(), [
+        'product_id' => 'required|exists:products,id',
+        'stock_quantity' => 'required|integer|min:0',
+        'mode' => 'required|string|in:add,set'
+    ]);
 
-        if ($validation) return $validation;
+    if ($validation) return $validation;
 
-        DB::beginTransaction();
-        try {
+    DB::beginTransaction();
+    try {
+        $productStock = ProductStock::where('product_id', $request->product_id)->first();
+        
+        if (!$productStock) {
             $productStock = new ProductStock();
-            $productStock = $this->dump_field($request->all(), $productStock);
+            $productStock->product_id = $request->product_id;
             $productStock->previous_stock_quantity = 0; // Initial stock has no previous quantity
-            $productStock->save();
-
-            DB::commit();
-
-            return response([
-                "message" => "success",
-                "data" => $productStock
-            ], 201);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response([
-                "message" => "Error: server side having problem!",
-            ], 500);
+        } else {
+            $productStock->previous_stock_quantity = $productStock->stock_quantity;
         }
+
+        if ($request->mode == 'add') {
+            $productStock->stock_quantity += $request->stock_quantity;
+        } else { // mode is 'set'
+            $productStock->stock_quantity = $request->stock_quantity;
+        }
+
+        $productStock->save();
+
+        DB::commit();
+
+        return response([
+            "message" => "success",
+            "data" => $productStock
+        ], 201);
+    } catch (\Throwable $th) {
+        DB::rollBack();
+        return response([
+            "message" => "Error: server side having problem!",
+            "th" => $th,
+        ], 500);
     }
+}
 
     public function update(Request $request, $id)
     {

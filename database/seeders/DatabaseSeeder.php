@@ -55,11 +55,21 @@ class DatabaseSeeder extends Seeder
         // Seed products
         DB::table('products')->insert([
             'category_id' => 1, // Assuming the first product category ID is 1
-            'name' => 'Smartphone',
-            'barcode' => 'Itel S23',
-            'image' => 'path/to/image.jpg',
-            'popularity_rating' => 5,
-            'sales_counter' => 10,
+            'name' => 'Pen Lovein',
+            'barcode' => '1326001',
+            'image' => '/default-image.png',
+            'buy_price' => 1500,
+            // 'sales_counter' => 10,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('products')->insert([
+            'category_id' => 1, // Assuming the first product category ID is 1
+            'name' => 'Buku',
+            'barcode' => '00987',
+            'image' => '/default-image.png',
+            'buy_price' => 2000,
+            // 'sales_counter' => 10,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -67,8 +77,27 @@ class DatabaseSeeder extends Seeder
         // Seed product_prices
         DB::table('product_prices')->insert([
             'product_id' => 1, // Assuming the first product ID is 1
-            'price_type' => 'Retail',
-            'price' => 299,
+            'price_type' => 'Ecer',
+            'price' => 2500,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('product_prices')->insert([
+            'product_id' => 2, // Assuming the first product ID is 1
+            'price_type' => 'Ecer',
+            'price' => 2500,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('product_stock')->insert([
+            'product_id' => 1, // Assuming the first product ID is 1
+            'stock_quantity' => 25,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('product_stock')->insert([
+            'product_id' => 2, // Assuming the first product ID is 1
+            'stock_quantity' => 25,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

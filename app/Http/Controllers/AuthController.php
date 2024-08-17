@@ -30,8 +30,8 @@ class AuthController extends Controller
                 'success' => true,
                 'token' => $token,
                 'user' => [
-                    'user_id' => $user->id,
-                    'username' => $user->username,
+                    // 'user_id' => $user->id,
+                    // 'username' => $user->username,
                     'name' => $user->name,
                     'role' => $user->role,
                 ],
@@ -43,4 +43,16 @@ class AuthController extends Controller
             ], 401);
         }
     }
+    public function account()
+    {
+        // * Find Data
+        $user = Auth::user();
+        
+        // * Response
+        return response([
+            'message' => 'Success',
+            'data' =>  $user
+        ]);
+    }
+
 }

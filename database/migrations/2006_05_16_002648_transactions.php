@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id('id');
+            $table->string('transaction_number')->unique()->index();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->dateTime('transaction_date');
-            $table->integer('total_amount');
+            $table->integer('total_price')->default(0);
+            $table->integer('total_bp')->default(0);
             $table->string('payment_type');
-            $table->string('status');
+            $table->string('total_payment')->default(0);
+            // $table->string('status');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

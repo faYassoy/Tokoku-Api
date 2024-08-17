@@ -16,9 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id');
             $table->string('price_type');
             $table->integer('price');
+            $table->integer('previous_price')->nullable();
             $table->timestamps();
 
-            $table->foreign('product_id')->references('id')->on('products');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 

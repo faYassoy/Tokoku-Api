@@ -27,7 +27,7 @@ class ProductController extends Controller
 
         // Begin query
         $model = new Product();
-        $query = Product::query();
+        $query = Product::query()->with('prices')->with('productStock');
 
         // Search functionality
         if ($request->get("search") != "") {
@@ -71,8 +71,8 @@ class ProductController extends Controller
             'category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
             'barcode' => 'nullable|string|unique:products,barcode',
-            'image' => 'nullable|file|image',
-            'popularity_rating' => 'nullable|integer',
+            'image' => 'nullable',
+            'buy_price' => 'required|integer|min:0',
             'sales_counter' => 'nullable|integer',
             'prices' => 'required|array',
             'prices.*.price_type' => 'required|string|max:255',
@@ -97,7 +97,7 @@ class ProductController extends Controller
             // Create product prices
             foreach ($request->prices as $priceData) {
                 $productPrice = new ProductPrice();
-                $productPrice->product_id = $product->product_id;
+                $productPrice->product_id = $product->id;
                 $productPrice->price_type = $priceData['price_type'];
                 $productPrice->price = $priceData['price'];
                 $productPrice->save();
@@ -105,7 +105,7 @@ class ProductController extends Controller
 
             // Create initial product stock
             $productStock = new ProductStock();
-            $productStock->product_id = $product->product_id;
+            $productStock->product_id = $product->id;
             $productStock->stock_quantity = $request->initial_stock_quantity;
             $productStock->previous_stock_quantity = 0;
             $productStock->save();
@@ -120,6 +120,7 @@ class ProductController extends Controller
             DB::rollBack();
             return response([
                 "message" => "Error: server side having problem!",
+                // "th" => $th,
             ], 500);
         }
     }
@@ -128,15 +129,13 @@ class ProductController extends Controller
     {
         // Validate request
         $validation = $this->validation($request->all(), [
-            'category_id' => 'required|exists:product_categories,category_id',
+            'category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
-            'barcode' => 'nullable|string|unique:products,barcode,' . $id . ',product_id',
-            'image' => 'nullable|file|image',
-            'popularity_rating' => 'nullable|integer',
+            'barcode' => 'nullable|string|unique:products,barcode,' . $id . ',id',
+            'image' => 'nullable',
+            'buy_price' => 'required|integer|min:0',
             'sales_counter' => 'nullable|integer',
-            'prices' => 'required|array',
-            'prices.*.price_type' => 'required|string|max:255',
-            'prices.*.price' => 'required|integer|min:0'
+           
         ]);
 
         if ($validation) return $validation;
@@ -154,14 +153,14 @@ class ProductController extends Controller
             $product->save();
 
             // Update product prices
-            $product->prices()->delete(); // Assuming a one-to-many relationship and a cascade delete
-            foreach ($request->prices as $priceData) {
-                $productPrice = new ProductPrice();
-                $productPrice->product_id = $product->product_id;
-                $productPrice->price_type = $priceData['price_type'];
-                $productPrice->price = $priceData['price'];
-                $productPrice->save();
-            }
+            // $product->prices()->delete(); // Assuming a one-to-many relationship and a cascade delete
+            // foreach ($request->prices as $priceData) {
+            //     $productPrice = new ProductPrice();
+            //     $productPrice->product_id = $product->product_id;
+            //     $productPrice->price_type = $priceData['price_type'];
+            //     $productPrice->price = $priceData['price'];
+            //     $productPrice->save();
+            // }
 
             DB::commit();
 
@@ -187,6 +186,8 @@ class ProductController extends Controller
             DB::rollBack();
             return response([
                 "message" => "Error: server side having problem!",
+                "th" => $th,
+                
             ], 500);
         }
 
