@@ -130,8 +130,7 @@ class SummaryTransactionsController extends Controller
         // Ensure that the open_at value is in the correct format
         $openAt = Carbon::parse($request->open_at)->format('Y-m-d H:i:s');
 
-        $model = SummaryTransactions::where('open_at', $openAt)
-            ->where('is_active', 1)
+        $model = SummaryTransactions::where('is_active', 1)
             ->first();
 
         if (!$model) {
