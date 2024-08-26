@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PicklistController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
@@ -56,7 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
     Route::middleware('checkRole:cashier,admin')->group(function() {
-        
+        Route::get('/dashboard/counter-data', [DashboardController::class, 'counterData']);
+        Route::apiResource('/customers', CustomerController::class);
         Route::apiResource('/products', ProductController::class);
         Route::apiResource('/transactions', TransactionController::class);
         Route::apiResource('/returns', ReturnController::class);
