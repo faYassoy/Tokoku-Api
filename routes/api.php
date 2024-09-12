@@ -38,6 +38,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/account', [AuthController::class, 'account']);
     Route::middleware('checkRole:admin')->group(function() {
+        Route::get('/dashboard/counter-data', [DashboardController::class, 'counterData']);
         Route::apiResource('/product-categories', ProductCategoryController::class);
         Route::apiResource('/users', UserController::class);
         Route::apiResource('/customers', CustomerController::class);
