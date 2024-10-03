@@ -26,7 +26,7 @@ class TransactionController extends Controller
 
        // Begin query
        $model = new Transaction();
-       $query = Transaction::query()->with('transactionDetails')->with('customer')->with('user');
+       $query = Transaction::query()->with(['transactionDetails','transactionDetails.product','transactionReturns','transactionReturns.product','customer','user',]);
 
        // Search functionality
        if ($request->get("search") != "") {

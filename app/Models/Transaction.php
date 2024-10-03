@@ -52,9 +52,9 @@ class Transaction extends Model
         return $this->hasMany(StockMovement::class, 'related_transaction_id');
     }
 
-    public function ProductReturn()
+    public function transactionReturns()
     {
-        return $this->hasOne(ProductReturn::class, 'transaction_id');
+        return $this->hasMany(TransactionReturn::class, 'transaction_id', 'id');
     }
 
     public function generateSaleNumber()

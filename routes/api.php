@@ -16,6 +16,7 @@ use App\Http\Controllers\ReturnDetailController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SummaryTransactionsController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransactionReturnController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -44,8 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/products', ProductController::class);
         Route::apiResource('/product-prices', ProductPriceController::class);
         Route::apiResource('/transactions', TransactionController::class);
-        Route::apiResource('/returns', ReturnController::class);
-        Route::apiResource('/return-details', ReturnDetailController::class);
+        Route::get('/transaction-returns/{transaction_id}', [TransactionReturnController::class,'index']);
+        Route::post('/transaction-returns/{transaction_id}', [TransactionReturnController::class,'store']);
+        // Route::apiResource('/returns', ReturnController::class);
+        // Route::apiResource('/return-details', ReturnDetailController::class);
         Route::apiResource('/reports', ReportController::class);
         Route::apiResource('/product-stocks', ProductStockController::class);
         Route::apiResource('/stock-movements', StockMovementController::class);
