@@ -10,6 +10,7 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
 use App\Http\Controllers\ProductStockController;
+use App\Http\Controllers\RecapController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReturnDetailController;
@@ -55,6 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/stock-movements', StockMovementController::class);
         Route::apiResource('/summary-transaction', SummaryTransactionsController::class);
         Route::post('/close-summary', [SummaryTransactionsController::class, 'close']);
+        Route::get('/recaps', [RecapController::class, 'getTransactionSummaryCart']);
+        Route::post('/transaction/new-payment', [TransactionController::class, 'createPayment']);
         
         Route::prefix('/options')->group(function () {
             Route::get('/category', [PicklistController::class, 'category']);

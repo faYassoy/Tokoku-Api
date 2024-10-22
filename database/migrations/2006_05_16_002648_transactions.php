@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('total_bp')->default(0);
             $table->string('payment_type');
             $table->string('total_payment')->default(0);
-            // $table->string('status');
+            $table->enum('status', ['pending', 'done', 'waiting_payment'])->index();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

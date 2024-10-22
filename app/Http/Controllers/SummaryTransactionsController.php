@@ -23,11 +23,11 @@ class SummaryTransactionsController extends Controller
             'open_at' => 'summary_sales.open_at',
         ];
 
-    
+
         $model = new SummaryTransactions();
 
         $query = SummaryTransactions::query();
-        
+
         if ($request->get('search') != '') {
             $query = $this->search($request->get('search'), $model, $query);
         } else {
@@ -74,9 +74,9 @@ class SummaryTransactionsController extends Controller
         $model->open_at = Carbon::now();
 
         try {
-            if(Auth::user()->role == 'admin'){
+            if (Auth::user()->role == 'admin') {
                 $model->save();
-            }else{
+            } else {
                 DB::rollback();
                 return response([
                     'message' => "unautorize to open store!",
@@ -92,7 +92,7 @@ class SummaryTransactionsController extends Controller
 
         DB::commit();
 
-        $model = SummaryTransactions:: where('id', $model->id)->first();
+        $model = SummaryTransactions::where('id', $model->id)->first();
 
         return response([
             'message' => 'Success',
@@ -102,23 +102,23 @@ class SummaryTransactionsController extends Controller
 
     public function check_open(Request $request)
     {
-      
+
         $model = SummaryTransactions::where('is_active', 1)
             ->first();
-    
+
         if (!$model) {
             return response([
                 'message' => 'Data not found'
             ], 404);
         }
-    
+
         // Check if the found model is active
         if ($model->is_active != 1) {
             return response([
                 'message' => 'Data not active'
             ], 404);
         }
-    
+
         return response([
             'message' => 'Success',
             'data' => $model,
@@ -180,5 +180,94 @@ class SummaryTransactionsController extends Controller
             "message" => "success",
             "data" => $model
         ], 200);
+    }
+    public function getTransactionSummaryChart(Request $request)
+    {
+        $filter = $request->get('filter', null);
+        $filterType = $request->get('filterType', 'monthly');
+
+        $chartData = [
+            'labels' => [],
+            'data' => [
+                [
+                    'name' => "Penjualan",
+                    'total_sales' => [],
+                ]
+            ]
+        ];
+
+        switch ($filterType) {
+            case 'yearly':
+                $year = $filter ?: now()->year;
+
+                // Labels: Indonesian months
+                for ($i = 1; $i <= 12; $i++) {
+                    array_push($chartData['labels'], Carbon::createFromFormat('m', $i)->translatedFormat('F')); // 'F' formats the full month name
+                }
+
+                // Query for yearly data grouped by month
+                $transactions = SummaryTransactions::whereYear('open_at', $year)
+                    ->selectRaw('MONTH(open_at) as month, SUM(total_income) as total_income')
+                    ->groupBy('month')
+                    ->get();
+
+                for ($i = 1; $i <= 12; $i++) {
+                    $income = $transactions->firstWhere('month', $i)->total_income ?? 0;
+                    array_push($chartData['data'][0]['total_sales'], $income);
+                }
+                break;
+
+            case 'monthly':
+                $yearMonth = $filter ?: now()->format('Y-m');
+                [$year, $month] = explode('-', $yearMonth);
+
+                // Get days of the month
+                $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+                for ($i = 1; $i <= $daysInMonth; $i++) {
+                    array_push($chartData['labels'], $i);
+                }
+
+                // Query for monthly data grouped by day
+                $transactions = SummaryTransactions::whereYear('open_at', $year)
+                    ->whereMonth('open_at', $month)
+                    ->selectRaw('DAY(open_at) as day, SUM(total_income) as total_income')
+                    ->groupBy('day')
+                    ->get();
+
+                for ($i = 1; $i <= $daysInMonth; $i++) {
+                    $income = $transactions->firstWhere('day', $i)->total_income ?? 0;
+                    array_push($chartData['data'][0]['total_sales'], $income);
+                }
+                break;
+
+            case 'weekly':
+                $yearMonth = $filter ?: now()->format('Y-m-W');
+                [$year, $month, $week] = explode('-', $yearMonth);
+
+                // Labels: Indonesian days of the week
+                for ($i = 0; $i < 7; $i++) {
+                    array_push($chartData['labels'], Carbon::now()->startOfWeek()->addDays($i)->translatedFormat('l')); // 'l' formats full day name
+                }
+
+                // Query for weekly data
+                $startOfWeek = Carbon::createFromDate($year, $month)->startOfWeek()->addWeeks($week);
+                $endOfWeek = $startOfWeek->copy()->endOfWeek();
+
+                $transactions = SummaryTransactions::whereBetween('open_at', [$startOfWeek, $endOfWeek])
+                    ->selectRaw('DAYOFWEEK(open_at) as day_of_week, SUM(total_income) as total_income')
+                    ->groupBy('day_of_week')
+                    ->get();
+
+                for ($i = 1; $i <= 7; $i++) {
+                    $income = $transactions->firstWhere('day_of_week', $i)->total_income ?? 0;
+                    array_push($chartData['data'][0]['total_sales'], $income);
+                }
+                break;
+        }
+
+        return response()->json([
+            'message' => 'Success',
+            'data' => $chartData,
+        ]);
     }
 }
