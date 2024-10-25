@@ -52,6 +52,28 @@ class Transaction extends Model
         return $this->hasMany(StockMovement::class, 'related_transaction_id');
     }
 
+    public function transaction_payments()
+    {
+        return $this->hasMany(TransactionPayment::class, 'transaction_id', 'id');
+    }
+
+    public static function getStatusEnum($key) {
+
+        $lists = [
+            'PENDING' => 'pending',
+            'DONE' => 'done',
+            'WAITING_PAYMENT' => 'waiting_payment',
+            'CANCEL' => 'cancel'
+        ];
+
+        if (isset($lists[$key])) {
+
+            return $lists[$key];
+        }
+
+        return null;
+    }
+
     public function transactionReturns()
     {
         return $this->hasMany(TransactionReturn::class, 'transaction_id', 'id');

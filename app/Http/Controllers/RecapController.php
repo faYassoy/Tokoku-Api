@@ -50,7 +50,7 @@ class RecapController extends Controller
                     ->whereMonth('open_at', $month)
                     ->whereDay('open_at', $day)
                     ->groupBy(DB::raw("HOUR(open_at)"))
-                    ->select(DB::raw("HOUR(open_at) as hour"), DB::raw("SUM(total_income) as total_sale"), DB::raw("SUM(total_sales) as total_sales"))
+                    ->select(DB::raw("HOUR(open_at) as hour"), DB::raw("SUM(total_sales) as total_sale"), DB::raw("SUM(total_sales) as total_sales"))
                     ->get();
     
                 // Map data to the chart for each hour

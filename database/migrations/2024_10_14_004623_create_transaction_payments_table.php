@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         {
-            Schema::create('sale_payments', function (Blueprint $table) {
+            Schema::create('transaction_payments', function (Blueprint $table) {
                 $table->id();
                 $table->foreignIdFor(Transaction::class)->nullable()->onDelete('cascade')->index();
                 $table->foreignIdFor(SummaryTransactions::class)->onDelete('set null')->index();

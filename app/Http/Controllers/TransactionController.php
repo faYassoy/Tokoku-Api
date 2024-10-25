@@ -75,7 +75,7 @@ class TransactionController extends Controller
             'total_bp' => 'required|integer',
             'payment_type' => 'required|string|max:255',
             'total_payment' => 'required|string|max:255',
-            // 'status' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
             'details' => 'required|array',
             'details.*.product_id' => 'required|exists:products,id',
             'details.*.quantity' => 'required|integer|min:1',
@@ -90,7 +90,8 @@ class TransactionController extends Controller
             $transaction = new Transaction();
             $transaction = $this->dump_field($request->all(), $transaction);
             $transaction->transaction_number = $transaction->generateSaleNumber();
-            $transaction->transaction_date = Carbon::now()->format('Y-m-d H:i:s');;
+            $transaction->transaction_date = Carbon::now()->format('Y-m-d H:i:s');
+            $transaction->status = $request->status;
             $transaction->save();
 
             foreach ($request->details as $detail) {
@@ -245,24 +246,24 @@ class TransactionController extends Controller
          * * Validation Request
          */
         $validation = $this->validation($request->all(), [
-            'sale_id' => 'required|numeric',
+            'transaction_id' => 'required|numeric',
             'payment_amount' => 'required|numeric|min:0',
-            'payment_method_id' => 'required|numeric',
-            'payment_information' => 'nullable|string'
+            // 'payment_method_id' => 'required|numeric',
+            // 'payment_information' => 'nullable|string'
         ]);
 
         if ($validation) return $validation;
         // * Validate sale
         $transaction = Transaction::with([
-            'sale_payments',
-            'sale_products'
-        ])->where('id', $request->sale_id)->first();
+            'transaction_payments',
+            'transactionDetails'
+        ])->where('id', $request->transaction_id)->first();
 
         if (!$transaction) {
             return response()->json([
                 'message' => "Error: unprocessable entity, validation error!",
                 'errors' => [
-                    'tra$transaction' => ['Transaksi penjualan tidak ditemukan']
+                    'transaction_id' => ['Transaksi penjualan tidak ditemukan']
                 ],
             ], 422);
         }
@@ -292,10 +293,10 @@ class TransactionController extends Controller
 
         // * Create new sale payment
         $newPayment = new TransactionPayment();
-        $newPayment->sale_id = $transaction->id;
-        $newPayment->summary_sale_id = $summaryTransaction->id;
+        $newPayment->transaction_id = $transaction->id;
+        $newPayment->summary_transactions_id = $summaryTransaction->id;
         $newPayment->created_by = Auth::user()->id;
-        $newPayment->invoice_number = $newPayment->generateInvoiceNumber();
+        // $newPayment->invoice_number = $newPayment->generateInvoiceNumber();
 
 
         $newPayment->total_payment = $request->payment_amount;
@@ -314,6 +315,7 @@ class TransactionController extends Controller
             DB::rollback();
             return response([
                 'message' => 'Error: failed to create new payment',
+                'th' => $th,
             ], 500);
         }
 
