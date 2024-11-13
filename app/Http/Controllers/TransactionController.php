@@ -30,10 +30,10 @@ class TransactionController extends Controller
         // Begin query
         $model = new Transaction();
         $query = Transaction::query()->with(['transactionDetails', 'transactionDetails.product', 'transactionReturns', 'transactionReturns.product', 'customer', 'user',]);
-
+        $searchable = ['transaction_number'];
         // Search functionality
         if ($request->get("search") != "") {
-            $query = $this->search($request->get("search"), $model, $query);
+            $query = $this->search($request->get("search"), $model, $query,$searchable);
         }
 
         // Filter functionality
@@ -124,6 +124,7 @@ class TransactionController extends Controller
                 $summaryTransaction->total_sales += $transaction->total_price;
                 $summaryTransaction->total_sale_product += array_sum(array_column($request->details, 'quantity'));
                 $summaryTransaction->total_payment += $transaction->total_payment;
+                $summaryTransaction->total_bp += $transaction->total_bp;
                 $summaryTransaction->total_income += $transaction->total_price - $transaction->total_bp;
                 $summaryTransaction->save();
             }

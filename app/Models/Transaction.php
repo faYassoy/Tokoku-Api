@@ -11,22 +11,28 @@ class Transaction extends Model
     // protected $primaryKey = 'transaction_id';
     protected $fillable = [
         'user_id',
-        'customer_id', 
-        'transaction_date', 
-        'total_price', 
-        'total_bp', 
-        'total_payment', 
-        'payment_type'];
+        'transaction_number',
+        'customer_id',
+        'transaction_date',
+        'total_price',
+        'total_bp',
+        'total_payment',
+        'payment_type'
+    ];
     public $selectable = [
         'transactions.user_id',
-        'transactions.customer_id', 
+        'transactions.customer_id',
         'transactions.transaction_date',
-        'transactions.total_price', 
-        'transactions.total_bp', 
-        'transactions.total_payment', 
+        'transactions.total_price',
+        'transactions.total_bp',
+        'transactions.total_payment',
         'transactions.payment_type',
-        'transactions.status'];
+        'transactions.status'
+    ];
 
+    protected $searchable = [
+        'transaction_number'  // This will allow searching by transaction_number
+    ];
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -39,7 +45,7 @@ class Transaction extends Model
 
     public function transactionDetails()
     {
-        return $this->hasMany(TransactionDetail::class, 'transaction_id','id');
+        return $this->hasMany(TransactionDetail::class, 'transaction_id', 'id');
     }
 
     public function creditTransaction()
@@ -57,7 +63,8 @@ class Transaction extends Model
         return $this->hasMany(TransactionPayment::class, 'transaction_id', 'id');
     }
 
-    public static function getStatusEnum($key) {
+    public static function getStatusEnum($key)
+    {
 
         $lists = [
             'PENDING' => 'pending',
@@ -92,16 +99,16 @@ class Transaction extends Model
             ->where('transaction_number', 'like', $code . "_____")
             ->orderBy('transaction_number', 'desc')
             ->first();
-        
+
         if (!$similiarCode) {
             $increment = 1;
         } else {
             $increment = (int) substr($similiarCode->transaction_number, strlen($code));
             $increment = $increment + 1;
         }
-        
+
         $code = $code . substr($zeroPadding, strlen("$increment")) . $increment;
-        
+
         return $code;
     }
 }

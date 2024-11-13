@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/summary-transaction', SummaryTransactionsController::class);
         Route::post('/close-summary', [SummaryTransactionsController::class, 'close']);
         Route::get('/recaps', [RecapController::class, 'getTransactionSummaryCart']);
+        Route::get('/popular', [RecapController::class, 'getPopularCategoryCart']);
         Route::post('/transaction/new-payment', [TransactionController::class, 'createPayment']);
         
         Route::prefix('/options')->group(function () {

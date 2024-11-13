@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_stock', function (Blueprint $table) {
             $table->id('id');
-            $table->integer('stock_quantity');
+            $table->integer('stock_quantity')->default(12);
             $table->integer('previous_stock_quantity')->nullable();
             $table->unsignedBigInteger('product_id');
             $table->timestamps();
