@@ -19,6 +19,14 @@ class Product extends Model
         'products.barcode',
         'products.image',
         ];
+        public $searchable = [
+            'products.id',
+            'products.category_id',
+            'products.name',
+            'products.buy_price',
+            'products.barcode',
+            'products.image',
+            ];
 
     public function category()
     {

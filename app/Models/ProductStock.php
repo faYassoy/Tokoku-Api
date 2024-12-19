@@ -14,7 +14,8 @@ class ProductStock extends Model
         'product_stock.stock_quantity', 
         'product_stock.previous_stock_quantity', 
         'product_stock.product_id',
-        'product_stock.created_at'
+        'product_stock.created_at',
+        'product_stock.updated_at'
     ];
 
     public function product()

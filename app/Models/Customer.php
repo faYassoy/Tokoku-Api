@@ -11,6 +11,8 @@ class Customer extends Model
     protected $table = 'customers';
     // protected $primaryKey = 'customer_id';
     protected $fillable = ['name', 'contact_info', 'credit_balance'];
+    protected $selectable = ['name', 'contact_info', 'credit_balance'];
+    public $searchable = ['customers.name', 'customers.contact_info', 'customers.credit_balance'];
 
     public function transactions()
     {

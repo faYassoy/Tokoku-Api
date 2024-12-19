@@ -13,6 +13,7 @@ class User extends Authenticatable
     protected $table = 'users';
     // protected $primaryKey = 'user_id';
     protected $fillable = ['username', 'password', 'name', 'role'];
+    public $searchable = ['username', 'password', 'name', 'role'];
     protected $hidden = ['password'];
         
     
